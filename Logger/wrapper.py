@@ -1,7 +1,11 @@
 import requests
 from datetime import datetime
+import os
 
-API_URL = "http://localhost:8000"
+API_URL = os.getenv("API_URL")
+if not API_URL:
+    raise ValueError(
+        "API_URL environment variable is not set. Please set it to the API endpoint.")
 
 
 class LoggingAgentWrapper:
@@ -11,7 +15,8 @@ class LoggingAgentWrapper:
 
     def process_created_at(self, created_at_str, last_timestamp_str):
         # Parse ISO 8601 with timezone
-        current_ts = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
+        current_ts = datetime.fromisoformat(
+            created_at_str.replace("Z", "+00:00"))
         last_ts = (
             datetime.fromisoformat(last_timestamp_str.replace("Z", "+00:00"))
             if last_timestamp_str
@@ -28,7 +33,8 @@ class LoggingAgentWrapper:
         response = requests.post(f"{API_URL}/run")
         if response.status_code == 200:
             run_data = response.json()
-            print(f"[WRAPPER] Run created successfully with ID: {run_data['run_id']}")
+            print(
+                f"[WRAPPER] Run created successfully with ID: {run_data['run_id']}")
             return run_data["run_id"]
         else:
             raise Exception(f"Failed to create run: {response.text}")
@@ -81,7 +87,8 @@ class LoggingAgentWrapper:
             checkpoint_id = state.config.get("configurable", {}).get(
                 "checkpoint_id", "N/A"
             )
-            created_at = state.created_at if hasattr(state, "created_at") else "N/A"
+            created_at = state.created_at if hasattr(
+                state, "created_at") else "N/A"
             values = state.values if state.values else {}
             curr_messages = values.get("messages", [])
 
